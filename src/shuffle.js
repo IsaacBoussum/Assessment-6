@@ -12,7 +12,9 @@ const copyArray = (source, array) => {
   return array;
 };
 
-module.exports = (array) => {
+module.exports = {
+  
+  shuffle: (array) => {
   const length = array == null ? 0 : array.length;
   if (!length) {
     return [];
@@ -27,7 +29,9 @@ module.exports = (array) => {
     result[index] = value;
   }
   return result;
-};
+},
+
+}
 
 // The MIT License
 //
