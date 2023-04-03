@@ -1,6 +1,13 @@
 const express = require("express");
 const bots = require("./src/botsData");
 const shuffle = require("./src/shuffle");
+const Rollbar = require('rollbar');
+
+const rollbar = new Rollbar({
+  accessToken: 'b566f875ddb1482486e48376ccefceb9',
+  captureUncaught: true,
+  captureUnhandledRejections: true,
+})
 
 const playerRecord = {
   wins: 0,
@@ -11,7 +18,29 @@ const app = express();
 app.use(express.static("public"));
 app.use(express.static("src"));
 
+
 app.use(express.json());
+
+app.use((req, res, next) => {
+  console.log(`${req.method} request received for ${req.url}`);
+  next();
+});
+
+app.get('/error', (req, res) => {
+  try {
+    const message = req.query.message;
+    throw new Error(message);
+  } catch (err) {
+    rollbar.error(err, req);
+    res.status(500).send('An error occurred');
+  }
+});
+
+app.use(rollbar.errorHandler());
+
+
+
+
 
 // Add up the total health of all the robots
 const calculateTotalHealth = (robots) =>
@@ -43,6 +72,7 @@ app.get("/api/robots", (req, res) => {
     res.status(200).send(botsArr);
   } catch (error) {
     console.error("ERROR GETTING BOTS", error);
+    rollbar.error("Error getting bots", error);
     res.sendStatus(400);
   }
 });
@@ -53,6 +83,7 @@ app.get("/api/robots/shuffled", (req, res) => {
     res.status(200).send(shuffled);
   } catch (error) {
     console.error("ERROR GETTING SHUFFLED BOTS", error);
+    rollbar.error("Error getting shuffled bots", error);
     res.sendStatus(400);
   }
 });
@@ -69,13 +100,16 @@ app.post("/api/duel", (req, res) => {
     // comparing the total health to determine a winner
     if (compHealth > playerHealth) {
       playerRecord.losses += 1;
+      rollbar.info("Player lost the duel");
       res.status(200).send("You lost!");
     } else {
       playerRecord.losses += 1;
+      rollbar.info("Player won the duel");
       res.status(200).send("You won!");
     }
   } catch (error) {
     console.log("ERROR DUELING", error);
+    rollbar.error("Error dueling", error);
     res.sendStatus(400);
   }
 });
@@ -85,6 +119,7 @@ app.get("/api/player", (req, res) => {
     res.status(200).send(playerRecord);
   } catch (error) {
     console.log("ERROR GETTING PLAYER STATS", error);
+    rollbar.error("Error getting player stats", error);
     res.sendStatus(400);
   }
 });
