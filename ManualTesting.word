@@ -1,0 +1,14 @@
+Test Plan: Verify that the /api/duel endpoint determines the winner correctly.
+Test Case:     Play enough games to ensure winning and losing at least once.
+                Verify that the player record returned by /api/player is updated correctly after each game.
+                erify that the winner is determined correctly by the /api/duel endpoint.
+
+Test Plan:  Verify that the /api/player endpoint returns the correct player record.
+Test Case:      Send a GET request to /api/player
+                Verify that the response status code is 200.
+                Verify that the response body is an object with the properties: wins and losses.
+                Verify that the values of the wins and losses properties are equal to the number of wins and losses in the playerRecord object.
+
+Bug #1:     The playerRecord object is updated incorrectly when the player wins.
+            The playerRecord object should be updated with one more win.
+            The playerRecord object is updated with one more loss instead of a win.
